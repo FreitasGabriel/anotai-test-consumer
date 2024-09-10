@@ -2,18 +2,26 @@ package main
 
 import (
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/logger"
-	"github.com/gin-gonic/gin"
+	"github.com/FreitasGabriel/anotai-test-consumer/src/service"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	router := gin.Default()
 
-	err := router.Run(":8081")
+	err := godotenv.Load()
 	if err != nil {
-		logger.Error("error to init server", err)
-		panic(err)
+		logger.Error(
+			"error to initialize environment variables",
+			err,
+		)
+		return
 	}
 
-	logger.Info("server runing in the port: 8081")
+	// _, err := database.InitDatabase(context.Background())
+	// if err != nil {
+	// 	logger.Error("error to init database", err)
+	// 	return
+	// }
 
+	service.InitQueue()
 }
