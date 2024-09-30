@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/logger"
+	"github.com/FreitasGabriel/anotai-test-consumer/src/repository"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const QUEUE_NAME_ENV = "QUEUE_NAME"
@@ -29,7 +31,7 @@ func initSQSSession() *session.Session {
 
 }
 
-func actionForReceivedMessage(svc *sqs.SQS) (*sqs.ReceiveMessageOutput, error) {
+func ReceivedMessageFromQueue(svc *sqs.SQS) (*sqs.ReceiveMessageOutput, error) {
 	receiveprams := &sqs.ReceiveMessageInput{
 		QueueUrl:            aws.String(queue_name),
 		WaitTimeSeconds:     aws.Int64(20),
@@ -50,8 +52,10 @@ func deleteMessageFromQueue(svc *sqs.SQS, msg *sqs.Message) error {
 	return err
 }
 
-func InitQueue() {
+func InitQueue(database *mongo.Database) {
 	sess := initSQSSession()
+	repo := repository.NewCatalogRepository(database)
+	service := NewCatalogService(repo)
 	svc := sqs.New(sess)
 
 	signalCh := make(chan os.Signal, 1)
@@ -64,7 +68,7 @@ func InitQueue() {
 			return
 		default:
 
-			result, err := actionForReceivedMessage(svc)
+			result, err := ReceivedMessageFromQueue(svc)
 			if err != nil {
 				logger.Error(fmt.Sprintf("error to receive message from queue %s ", queue_name), err)
 				time.Sleep(1 * time.Second)
@@ -72,7 +76,8 @@ func InitQueue() {
 			}
 
 			for _, msg := range result.Messages {
-				fmt.Printf("Mensagem recebida: %s \n", *msg.Body)
+				fmt.Printf("Received message: %s \n", *msg.Body)
+				service.PublishCatalog()
 				err = deleteMessageFromQueue(svc, msg)
 				if err != nil {
 					logger.Error(fmt.Sprintf("error to delete message from queue %s ", queue_name), err)

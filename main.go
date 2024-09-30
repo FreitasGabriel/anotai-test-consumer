@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+
+	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/database"
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/logger"
 	"github.com/FreitasGabriel/anotai-test-consumer/src/service"
 	"github.com/joho/godotenv"
@@ -17,11 +20,11 @@ func main() {
 		return
 	}
 
-	// _, err := database.InitDatabase(context.Background())
-	// if err != nil {
-	// 	logger.Error("error to init database", err)
-	// 	return
-	// }
+	db, err := database.InitDatabase(context.Background())
+	if err != nil {
+		logger.Error("error to init database", err)
+		return
+	}
 
-	service.InitQueue()
+	service.InitQueue(db)
 }

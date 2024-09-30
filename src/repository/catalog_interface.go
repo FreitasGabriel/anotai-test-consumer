@@ -13,6 +13,5 @@ type catalogRepositoryInterface struct {
 }
 
 type CatalogRepositoryInterface interface {
-	FindCatalog() error
-	CreateVisualization() error
+	FindCatalog(ownerId string) error
 }
