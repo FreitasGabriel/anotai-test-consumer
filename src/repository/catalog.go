@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/logger"
 	"github.com/FreitasGabriel/anotai-test-consumer/src/repository/model"
@@ -16,7 +16,7 @@ var (
 	categoryCollection = "category"
 )
 
-func (cr *catalogRepositoryInterface) FindCatalog(ownerId string) (*model.Catalog, error) {
+func (cr *catalogRepositoryInterface) GenerateCatalog(ownerId string) ([]byte, error) {
 
 	var catalog model.Catalog
 	var categoryItem model.Category
@@ -26,17 +26,18 @@ func (cr *catalogRepositoryInterface) FindCatalog(ownerId string) (*model.Catalo
 
 	cursor, err := cr.databaseConn.Collection(categoryCollection).Aggregate(ctx, mongo.Pipeline{lookupStage})
 	if err != nil {
-		logger.Error("error to get agregation", err)
+		logger.Error("error to get agregation", err, zap.String("journey", "generateCatalog"))
 		return nil, err
 	}
 
 	defer cursor.Close(ctx)
 
 	if cursorErr := cursor.All(ctx, &catalogAggregation); cursorErr != nil {
-		logger.Error("could not possible to cursor into slice", err, zap.String("journey", "findProductByTitle"))
+		logger.Error("could not possible to cursor into slice", err, zap.String("journey", "generateCatalog"))
 		return nil, err
 	}
 
+	catalog.Owner = "1"
 	for _, catalogItem := range catalogAggregation {
 		categoryItem.CategoryTitle = catalogItem.Title
 		categoryItem.CategoryDescription = catalogItem.Description
@@ -44,9 +45,10 @@ func (cr *catalogRepositoryInterface) FindCatalog(ownerId string) (*model.Catalo
 		catalog.Catalog = append(catalog.Catalog, categoryItem)
 	}
 
-	catalog.Owner = "1"
+	res, err := json.Marshal(catalog)
+	if err != nil {
+		logger.Error("error to marshal catalog", err, zap.String("journey", "generateCatalog"))
+	}
 
-	fmt.Println("catalog", catalog)
-
-	return &catalog, nil
+	return res, nil
 }

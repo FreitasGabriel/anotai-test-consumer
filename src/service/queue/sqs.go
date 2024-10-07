@@ -1,4 +1,4 @@
-package service
+package queue
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/logger"
 	"github.com/FreitasGabriel/anotai-test-consumer/src/repository"
+	"github.com/FreitasGabriel/anotai-test-consumer/src/service"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -55,7 +56,7 @@ func deleteMessageFromQueue(svc *sqs.SQS, msg *sqs.Message) error {
 func InitQueue(database *mongo.Database) {
 	sess := initSQSSession()
 	repo := repository.NewCatalogRepository(database)
-	service := NewCatalogService(repo)
+	service := service.NewCatalogService(repo)
 	svc := sqs.New(sess)
 
 	signalCh := make(chan os.Signal, 1)

@@ -5,12 +5,13 @@ import (
 
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/database"
 	"github.com/FreitasGabriel/anotai-test-consumer/src/configuration/logger"
-	"github.com/FreitasGabriel/anotai-test-consumer/src/service"
+	"github.com/FreitasGabriel/anotai-test-consumer/src/service/queue"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 
+	logger.Info("Starting server...")
 	err := godotenv.Load()
 	if err != nil {
 		logger.Error(
@@ -26,5 +27,6 @@ func main() {
 		return
 	}
 
-	service.InitQueue(db)
+	queue.InitQueue(db)
+
 }
