@@ -75,16 +75,18 @@ func InitQueue(database *mongo.Database) {
 				continue
 			}
 
-			for _, msg := range result.Messages {
-				fmt.Printf("Received message: %s \n", *msg.Body)
-				service.PublishCatalog()
-				err = deleteMessageFromQueue(svc, msg)
-				if err != nil {
-					logger.Error(fmt.Sprintf("error to delete message from queue %s ", queue_name), err)
-					time.Sleep(1 * time.Second)
-					continue
+			logger.Info("looking for new messages...")
+			if len(result.Messages) > 0 {
+				for _, msg := range result.Messages {
+					logger.Info(fmt.Sprintf("Received message: %s \n", *msg.Body))
+					service.PublishCatalog()
+					err = deleteMessageFromQueue(svc, msg)
+					if err != nil {
+						logger.Error(fmt.Sprintf("error to delete message from queue %s ", queue_name), err)
+						time.Sleep(1 * time.Second)
+						continue
+					}
 				}
-
 			}
 		}
 	}

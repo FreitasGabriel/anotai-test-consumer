@@ -1,6 +1,9 @@
 package repository
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"github.com/FreitasGabriel/anotai-test-consumer/src/repository/model"
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 func NewCatalogRepository(database *mongo.Database) CatalogRepositoryInterface {
 	return &catalogRepositoryInterface{
@@ -13,5 +16,5 @@ type catalogRepositoryInterface struct {
 }
 
 type CatalogRepositoryInterface interface {
-	FindCatalog(ownerId string) error
+	FindCatalog(ownerId string) (*model.Catalog, error)
 }
